@@ -68,13 +68,27 @@
 (define (list->myers-stack list)
   (foldr myers-stack-cons myers-stack-null list))
 
+(define (myers-stack-length stack)
+  (myers-stack-length stack))
+
+(define (drop stack count)
+  (if (> count 0)
+      (let ([jump-length (myers-stack-length (myers-stack-jump stack))])
+        (cond
+          [(<= jump-length count) (drop (myers-stack-jump stack)(unsafe-fx- count jump-length))]
+          [else (drop (myers-stack-next stack) (unsafe-fx- count 1))]))
+      stack))
+     
+      
+
 
 ;;;;;;;;;
 ;;Tests;;
 ;;;;;;;;;
 
 (define x (list->myers-stack (list 1 2 3 4 5 6 7)))
-(print (myers-stack-data x))
-(print (myers-stack-data (myers-stack-next x)))
-(print (myers-stack-length x))
+(print (drop x 1))
+;(print (myers-stack-data x))
+;(print (myers-stack-data (myers-stack-next x)))
+;(print (myers-stack-length x))
 
