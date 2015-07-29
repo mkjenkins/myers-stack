@@ -29,8 +29,10 @@
   #:mutable)
 
 (define (myers-stack-car stack)
- ; (assert (< 0 (myers-stack-length stack)))
-  (myers-stack-data stack))
+  (cond
+    [(zero? (myers-stack-length stack)) myers-stack-null]
+    [(< 0 (myers-stack-length stack))
+  (myers-stack-data stack)]))
 
 (define myers-stack-car-set! set-myers-stack-data!)
 
@@ -121,3 +123,4 @@
 ;(print (myers-stack-data (myers-stack-next x)))
 ;(print (myers-stack-length x))
 
+;;test 0 length stack
