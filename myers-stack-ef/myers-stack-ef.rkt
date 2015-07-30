@@ -29,23 +29,23 @@
  (define (myers-stack-ef-cons car cdr)
    (let* ([head-length (node-length (myers-stack-ef-head cdr))]
             [head-jump-length  (node-length (myers-stack-ef-head (node-jump (myers-stack-ef-head cdr))))])
-      (let ([cdr-length (node-length (myers-stack-ef-head cdr))]
+      (let ([c-length (node-length (myers-stack-ef-head cdr))]
              [mid-next-length (if (eq? #f (node-next (myers-stack-ef-mid cdr)))
                                   0
-                                 (node-next (myers-stack-ef-mid cdr)))]
+                                 (node-length (myers-stack-ef-mid (node-next (myers-stack-ef-mid cdr)))))]
              [mid-next-jump-length (if (eq? #f (node-next (myers-stack-ef-mid cdr)))
                                        0
-                                       (node-next (myers-stack-ef-mid cdr)))])
-         (let ([length (+ 1 cdr-length)])
+                                       (node-length (myers-stack-ef-mid (node-jump (myers-stack-ef-mid (node-next (myers-stack-ef-mid cdr)))))))])
+         (let ([length (+ 1 c-length)])
             (if (eq? (- head-length head-jump-length )
                      (- mid-next-length mid-next-jump-length))
-                (myers-stack-ef (node car length cdr  (node-jump (myers-stack-ef-mid cdr))) (node-next (myers-stack-ef-head cdr)))
-                (myers-stack-ef (node car length cdr (node-jump (myers-stack-ef-mid cdr))) (node-next (myers-stack-ef-head cdr))))))))
+                (myers-stack-ef (node car length cdr (node-next (myers-stack-ef-mid cdr))) (node car length cdr (node-jump (myers-stack-ef-mid cdr))))
+                (myers-stack-ef (node car length cdr (node-jump (myers-stack-ef-mid cdr))) (node car length cdr (node-jump (myers-stack-ef-mid cdr)))))))))
 
 (define myers-stack-ef-null
          (let* ([jumps-jump (myers-stack-ef (node #f -1 #f #f) (node #f -1 #f #f))]
                 [jump (myers-stack-ef (node #f 0 #f jumps-jump) (node #f 0 #f jumps-jump))])
-            (myers-stack-ef (node #f 0 #f jump) (node #f 0 #f jump))))
+            (myers-stack-ef (node #f 0 jump jump) (node #f 0 jump jump))))
 
 (define (myers-stack-ef-null? stack)
   (and (myers-stack-ef? stack) (zero? (myers-stack-ef-head (node-length stack)))))
@@ -69,10 +69,11 @@
 ;;;;;;;;;
 ;;Tests;;
 ;;;;;;;;;
-;(define x (list->myers-stack-ef (list 1 2 3)))
-(define x (myers-stack-ef-cons 1 myers-stack-ef-null))
-(display (node-next (myers-stack-ef-head x)))
-(display (node-jump (myers-stack-ef-head x)))
-(define y (myers-stack-ef-cons 2 x))
+(define x (list->myers-stack-ef (list 1 2 3)))
+;(define x (myers-stack-ef-cons 1 myers-stack-ef-null))
+(display (node-data (myers-stack-ef-head x)))
+;(display (node-jump (myers-stack-ef-head x)))
+;(define y (myers-stack-ef-cons 2 x))
+;(display (node-data (myers-stack-ef-head y)))
 ;(display (node-next (myers-stack-ef-head y)))
 ;(print (node-next (myers-stack-ef-mid myers-stack-ef-null)))
