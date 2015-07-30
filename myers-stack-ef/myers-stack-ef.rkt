@@ -1,7 +1,12 @@
 #lang racket
 (require racket/unsafe/ops)
 
-;head and mid will be nodes
+(provide myers-stack myers-stack-car 
+         myers-stack-cdr myers-stack-cons
+         myers-stack-null? myers-stack-pair?
+         myers-stack->list list->myers-stack
+         myers-stack-drop)
+
 (struct myers-stack-ef (head
                         mid))
 (struct node (data
@@ -11,13 +16,11 @@
 
 
 (define (myers-stack-ef-car stack)
- ; (assert (< 0 (myers-stack-length stack)))
   (myers-stack-ef-head stack))
 
-;(define myers-stack-car-set! (myers-stack-ef-data! set-node-data!))
+(define myers-stack-car-set! (node-data (myers-stack-ef-head! set-node-data!)))
 
 (define (myers-stack-ef-cdr stack)
- ;; (assert (< 0 (myers-stack-length stack)))
   (node-next (myers-stack-ef-head stack)))
 
 
@@ -66,13 +69,31 @@
 (define (myers list)
   (myers-stack-ef-cons list myers-stack-ef-null))
 
+(define (myers-stack-ef-drop stack count)
+  (cond
+    [(eq? count 1) (myers-stack-ef-cdr stack)]
+    [(> count 1)
+      (let* ([jump-length (+ (node-length (myers-stack-ef-head stack)) (node-length (myers-stack-ef-head (node-jump (myers-stack-ef-head stack)))))])
+             (cond
+               [(<= jump-length count) (drop (node-jump (myers-stack-ef-head stack))(- count jump-length))]
+               [else (drop (node-next (myers-stack-ef-head stack)) (- count 1))]))]
+    [else stack]))
 ;;;;;;;;;
 ;;Tests;;
 ;;;;;;;;;
-(define x (list->myers-stack-ef (list 1 2 3)))
+(define x (list->myers-stack-ef (list 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15)))
 ;(define x (myers-stack-ef-cons 1 myers-stack-ef-null))
-(display (node-data (myers-stack-ef-head x)))
-;(display (node-jump (myers-stack-ef-head x)))
+(display (node-data (myers-stack-ef-head (drop x 4))))
+(newline)
+(display (node-data (myers-stack-ef-head (node-next (myers-stack-ef-head x)))))
+(newline)
+(display (node-data (myers-stack-ef-head (node-jump (myers-stack-ef-head (node-next (myers-stack-ef-head x)))))))
+(newline)
+(display (node-data (myers-stack-ef-head (node-next (myers-stack-ef-head (node-next (myers-stack-ef-head x)))))))
+(newline)
+(display (node-data (myers-stack-ef-head (node-next (myers-stack-ef-head (node-next (myers-stack-ef-head (node-next (myers-stack-ef-head x)))))))))
+(newline)
+;(display (node-data (myers-stack-ef-head (node-jump (myers-stack-ef-head x)))))
 ;(define y (myers-stack-ef-cons 2 x))
 ;(display (node-data (myers-stack-ef-head y)))
 ;(display (node-next (myers-stack-ef-head y)))

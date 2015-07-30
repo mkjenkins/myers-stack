@@ -10,12 +10,11 @@
 ;Test
 ;Visualization
 
-#;(provide myers-stack myers-stack-car 
+(provide myers-stack myers-stack-car 
          myers-stack-cdr myers-stack-cons
          myers-stack-null? myers-stack-pair?
          myers-stack->list list->myers-stack
-         myers-stack-drop
-         gen:ms)
+         myers-stack-drop)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;  
@@ -27,8 +26,10 @@
                      next
                      jump)
   #:mutable)
-
 (define (myers-stack-car stack)
+   (myers-stack-data stack))
+
+#;(define (myers-stack-car stack)
   (cond
     [(zero? (myers-stack-length stack)) myers-stack-null]
     [(< 0 (myers-stack-length stack))
@@ -37,7 +38,6 @@
 (define myers-stack-car-set! set-myers-stack-data!)
 
 (define (myers-stack-cdr stack)
- ;; (assert (< 0 (myers-stack-length stack)))
   (myers-stack-next stack))
 
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -82,7 +82,7 @@
   (list->myers-stack (list ...)))
 
 
-(define (drop stack count)
+(define (myers-stack-drop stack count)
   (cond
     [(eq? count 1) (myers-stack-cdr stack)]
     [(> count 1)
@@ -96,18 +96,21 @@
 ;;Tests;;
 ;;;;;;;;;
 
-(define x (list->myers-stack (list 1 2 3 4 5 6 7)))
+(define x (list->myers-stack (list 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16)))
 (pretty-print x)
+(print (myers-stack-car myers-stack-null))
 (newline)
 (print "drop: ")
-(print (myers-stack-data (drop x 4)))
+;(print (myers-stack-data (drop x 4)))
 (newline)
 ;(print (list->myers-stack (list 1 2 3 4 5 6 7)))
 (print (myers-stack-length (myers-stack-jump x)))
 (newline)
 (print (myers-stack-length x))
 (newline)
-(print (myers-stack-car x))
+(print "jump: ")
+(newline)
+(print (myers-stack-data (myers-stack-jump (myers-stack-next x))))
 (newline)
 (print (myers-stack->list x))
 (newline)
