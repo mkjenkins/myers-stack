@@ -1,14 +1,10 @@
 #lang racket
 (require racket/unsafe/ops)
+(require rackunit)	
 
-
-;;Original Myers stack implementation
-
-;;TODO
-;myers-stack-index
-;myers-stack-drop
-;Test
-;Visualization
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Original Myers stack implementation;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (provide myers-stack myers-stack-car 
          myers-stack-cdr myers-stack-cons
@@ -26,23 +22,20 @@
                      next
                      jump)
   #:mutable)
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;
+;;Exported Functions;;
+;;;;;;;;;;;;;;;;;;;;;;
+
 (define (myers-stack-car stack)
    (myers-stack-data stack))
-
-#;(define (myers-stack-car stack)
-  (cond
-    [(zero? (myers-stack-length stack)) myers-stack-null]
-    [(< 0 (myers-stack-length stack))
-  (myers-stack-data stack)]))
 
 (define myers-stack-car-set! set-myers-stack-data!)
 
 (define (myers-stack-cdr stack)
   (myers-stack-next stack))
-
-;;;;;;;;;;;;;;;;;;;;;;
-;;Exported Functions;;
-;;;;;;;;;;;;;;;;;;;;;;
 
 (define myers-stack-null
          (let* ([jumps-jump (myers-stack #f -1 #f #f)]
@@ -55,9 +48,9 @@
       (let ([c-length (myers-stack-length cdr)]
              [jump-length (myers-stack-length jump)]
              [jumps-jump-length (myers-stack-length jumps-jump)])
-         (let ([length (+ 1 c-length)])
-            (if (eq? (- c-length jump-length)
-                     (- jump-length jumps-jump-length))
+         (let ([length (unsafe-fx+ 1 c-length)])
+            (if (eq? (unsafe-fx- c-length jump-length)
+                     (unsafe-fx- jump-length jumps-jump-length))
                 (myers-stack car length cdr jumps-jump)
                 (myers-stack car length cdr cdr))))))
 
@@ -78,18 +71,14 @@
 (define (list->myers-stack list)
   (foldr myers-stack-cons myers-stack-null list))
 
-#;(define (make-myers-stack ...)
-  (list->myers-stack (list ...)))
-
-
 (define (myers-stack-drop stack count)
   (cond
     [(eq? count 1) (myers-stack-cdr stack)]
     [(> count 1)
-      (let* ([jump-length (+ (myers-stack-length stack) (myers-stack-length (myers-stack-jump stack)))])
+      (let* ([jump-length (unsafe-fx+ (myers-stack-length stack) (myers-stack-length (myers-stack-jump stack)))])
              (cond
-               [(<= jump-length count) (drop (myers-stack-jump stack)(- count jump-length))]
-               [else (drop (myers-stack-next stack) (- count 1))]))]
+               [(<= jump-length count) (myers-stack-drop (myers-stack-jump stack)(unsafe-fx- count jump-length))]
+               [else (myers-stack-drop (myers-stack-next stack) (unsafe-fx- count 1))]))]
     [else stack]))
 
 ;;;;;;;;;
@@ -97,33 +86,16 @@
 ;;;;;;;;;
 
 (define x (list->myers-stack (list 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16)))
-(pretty-print x)
-(print (myers-stack-car myers-stack-null))
+(check-eq? 0 (myers-stack-length myers-stack-null))
+(check-eq? 5 (myers-stack-data (myers-stack-drop x 4)))
+(print (myers-stack->list (list->myers-stack (list 1 2 3 4 5 6 7))))
 (newline)
-(print "drop: ")
-;(print (myers-stack-data (drop x 4)))
-(newline)
-;(print (list->myers-stack (list 1 2 3 4 5 6 7)))
-(print (myers-stack-length (myers-stack-jump x)))
-(newline)
-(print (myers-stack-length x))
-(newline)
-(print "jump: ")
-(newline)
-(print (myers-stack-data (myers-stack-jump (myers-stack-next x))))
-(newline)
-(print (myers-stack->list x))
-(newline)
-(print (myers-stack-length (myers-stack-jump x)))
-;(define x (myers-stack-cons 2 (myers-stack-cons 1 myers-stack-null)))
-;(print (myers-stack-data (myers-stack-next x)))
+(check-eq?  16 (myers-stack-length x))
+(check-eq? 14 (myers-stack-length (myers-stack-cdr (myers-stack-cdr x))))
+(check-true (myers-stack-pair? x) "uh oh")
+(check-false (myers-stack-null? x) "uh oh")
+(check-true (myers-stack-null? myers-stack-null) "uh oh")
+(check-eq? 1 (myers-stack-car (myers-stack-drop x 0)))
+(define crap (myers-stack-cons 2 (myers-stack-cons 1 myers-stack-null)))
+(check-eq? 2 (myers-stack-car crap))
 
-;(print (myers-stack-data x))
-;(define x myers-stack-null)
-;(define y (myers-stack-length x))
-;(define z (myers-stack-next x))
-;(print (list x y z))
-;(print (myers-stack-data (myers-stack-next x)))
-;(print (myers-stack-length x))
-
-;;test 0 length stack
